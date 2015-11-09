@@ -24,34 +24,42 @@ public class Bookmark extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v=inflater.inflate(R.layout.activity_main_screen,container,false);
         recyclerView= (RecyclerView) v.findViewById(R.id.recycler_list_main);
-        list=new ArrayList<>();
         dbHelper=new DBHelper(getActivity());
-        adapter=new MainAdapter(getActivity(),list);
         getData();
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(),new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-              SQLiteDatabase sqLiteDatabase= dbHelper.getWritableDatabase();
-              sqLiteDatabase.delete(DBHelper.TABLE_NAME,DBHelper.KEY_ROWID+"="+(++position),null);
+                SQLiteDatabase db=dbHelper.getReadableDatabase();
+                String k=list.get(position).description;
+                String[] columns={DBHelper.KEY_description};
+                String selection=dbHelper.KEY_description+"='"+k+"'";
+                Cursor cursor=db.query(DBHelper.TABLE_NAME,columns,selection,null,null,null,null);
+                if (cursor != null) {
+                    cursor.moveToFirst();
+                }
+                String ok=dbHelper.KEY_description+"='"+k+"'";
+         db.delete(dbHelper.TABLE_NAME,ok,null);
+                cursor.close();
+                db.close();
                 list.remove(position);
                 adapter.notifyDataSetChanged();
-                dbHelper.close();
             }
         }));
         return v;
     }
     public void getData(){
+        list=new ArrayList<>();
         SQLiteDatabase db=dbHelper.getReadableDatabase();
         String columns[]={DBHelper.KEY_ROWID,DBHelper.Key_Topic,DBHelper.KEY_Title,DBHelper.KEY_description,DBHelper.Key_url};
         Cursor cursor=db.query(DBHelper.TABLE_NAME,columns,null,null,null,null,null);
         if(cursor.moveToFirst()){
         do{
            list.add(new Item_main(cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4)));
-            adapter.notifyDataSetChanged();
         }while (cursor.moveToNext());}
         cursor.close();
         db.close();
+        adapter=new MainAdapter(getActivity(),list);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
 }

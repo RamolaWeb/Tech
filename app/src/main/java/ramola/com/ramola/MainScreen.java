@@ -23,6 +23,26 @@ TabLayout tabLayout;
         adapter.addFragment(new Bookmark(),"Bookmark");
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i2) {
+
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+            if(adapter.getPageTitle(i)=="Bookmark")
+                viewPager.setOffscreenPageLimit(2);
+                else
+                viewPager.setOffscreenPageLimit(1);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+
+            }
+        });
+        viewPager.setOffscreenPageLimit(2);
     }
 
     @Override

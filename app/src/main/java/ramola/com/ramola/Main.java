@@ -57,18 +57,19 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
                     swipeRefreshLayout.setRefreshing(true);
                 }
             });
-            if(savedInstanceState!=null){
-                list=savedInstanceState.getParcelableArrayList("list");
-            }
-            else {
-                list=new ArrayList<>();
-                GetJson(url);
-            }
         }
         else
         {
             Snackbar.make(coordinatorLayout, "NO INTERNET PRESENT", Snackbar.LENGTH_INDEFINITE).show();
             list=new ArrayList<>();
+        }
+        if(savedInstanceState!=null){
+            list=savedInstanceState.getParcelableArrayList("list");
+           swipeRefreshLayout.setRefreshing(false);
+        }
+        else {
+            list=new ArrayList<>();
+            GetJson(url);
         }
         adapter=new MainAdapter(getActivity(),list);
         recyclerView.setAdapter(adapter);
@@ -105,12 +106,12 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
                             list.add(new Item_main(dataItem.getString("section"),dataItem.getString("title"),dataItem.getString("abstract"),dataItem.getString("url")));
                         adapter.notifyDataSetChanged();
                     }
-                    swipeRefreshLayout.setRefreshing(false);
                 } catch (JSONException e) {
                     e.printStackTrace();
                     swipeRefreshLayout.setRefreshing(false);
                     createSnackBar("NO NEWS FOUND");
                 }
+                swipeRefreshLayout.setRefreshing(false);
             }
         },new Response.ErrorListener() {
             @Override
@@ -118,6 +119,7 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
                 volleyError.printStackTrace();
                 swipeRefreshLayout.setRefreshing(false);
                 createSnackBar(volleyError.getMessage());
+
             }
         });
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);

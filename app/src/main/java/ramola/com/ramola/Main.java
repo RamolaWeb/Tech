@@ -51,12 +51,14 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
 
         connection=new Connection(getActivity());
         if(connection.isInternet()){
-            swipeRefreshLayout.post(new Runnable() {
-                @Override
-                public void run() {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
-            });
+            if(savedInstanceState==null) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefreshLayout.setRefreshing(true);
+                    }
+                });
+            }
         }
         else
         {
@@ -104,6 +106,8 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
                         }
                         else
                             list.add(new Item_main(dataItem.getString("section"),dataItem.getString("title"),dataItem.getString("abstract"),dataItem.getString("url")));
+                        if(swipeRefreshLayout.isRefreshing())
+                            swipeRefreshLayout.setRefreshing(false);
                         adapter.notifyDataSetChanged();
                     }
                 } catch (JSONException e) {
@@ -111,7 +115,6 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
                     swipeRefreshLayout.setRefreshing(false);
                     createSnackBar("NO NEWS FOUND");
                 }
-                swipeRefreshLayout.setRefreshing(false);
             }
         },new Response.ErrorListener() {
             @Override
@@ -153,5 +156,12 @@ public class Main extends android.support.v4.app.Fragment implements SwipeRefres
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList("list",list);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(swipeRefreshLayout.isRefreshing())
+            swipeRefreshLayout.setRefreshing(false);
     }
 }
